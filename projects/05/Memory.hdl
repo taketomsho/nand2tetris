@@ -1,0 +1,53 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the Hack computer's memory,
+ * including RAM and memory-mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load==1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output from the next time step onward.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // Put your code here:
+
+    DMux(in=load, sel=address[14], a=ramload, b=ioload); // 1 {
+    DMux(in=ioload, sel=address[13], a=scrload, b=kbload); // 2 {
+
+    RAM16K(in=in, load=ramload, address=address[0..13], out=ramout);
+    Screen(in=in, load=scrload, address=address[0..12], out=scrout);
+    Keyboard(out=kbout);
+
+    Mux16(a=scrout, b=kbout, sel=address[13], out=ioout); // } 2
+    Mux16(a=ramout, b=ioout, sel=address[14], out=out); // } 1
+
+//    And16(a[0..14]=address,a[15]=false,b=true,out[0]=ad0,out[1]=ad1,out[2]=ad2,out[3..14]=ad);
+//    DMux8Way(in=load,sel[0]=ad0,sel[1]=ad1,sel[2]=ad2,a=a,b=b,c=c,d=d,e=e,f=f,g=g,h=h);
+//    RAM16K(in=in,load=a,address[0]=ad1,address[1]=ad2,address[2..13]=ad,out=w1);
+//    RAM16K(in=in,load=b,address[0]=ad1,address[1]=ad2,address[2..13]=ad,out=w2);
+//    RAM16K(in=in,load=c,address[0]=ad1,address[1]=ad2,address[2..13]=ad,out=w3);
+//    RAM16K(in=in,load=d,address[0]=ad1,address[1]=ad2,address[2..13]=ad,out=w4);
+//    Screen(in=in, load=e,address[0]=ad2,address[1..12]=ad,out=w5);
+//    Screen(in=in, load=f,address[0]=ad2,address[1..12]=ad,out=w6);
+//    Keyboard(out=w7);
+//    Mux8Way16(a=w1,b=w2,c=w3,d=w4,e=w5,f=w6,g=w7,h=false,sel[0]=ad0,sel[1]=ad1,sel[2]=ad2,out=out);
+
+}
